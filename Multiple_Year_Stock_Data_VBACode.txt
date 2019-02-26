@@ -1,0 +1,142 @@
+Sub Moderate():
+
+'Worksheet iterator
+Dim ws As Worksheet
+
+'Loop over worksheets
+For Each ws In Worksheets
+
+  'Activate the worksheet
+   ws.Activate
+
+  'Create Row iterator
+    Dim row As Variant
+    
+  'SummaryRowCounter Variable
+    Dim SummaryRow As Variant
+    SummaryRow = 2
+    
+  'Create Ticker
+    Dim Ticker As String
+    
+  'Create counter variable
+    Dim Counter As Variant
+    
+  'Total_Vol
+    Dim Total_Vol As Variant
+    
+  'open and close value
+    Dim OpenValue As Variant
+    Dim CloseValue As Variant
+    
+  'Create YearlyChange Variable
+    Dim YearlyChange As Variant
+  
+  'Create PercentChange Variable
+    Dim PercentChange As Double
+    
+    
+    'Last Row Variable
+    Dim LastRow As Variant
+    LastRow = Range("A" & Rows.Count).End(xlUp).row
+    
+    'Set the Category titles for the Summary Table
+    Range("L1").Value = "Ticker"
+    Range("L1").Font.Bold = True
+    Range("L1").HorizontalAlignment = xlCenter
+   
+    
+    Range("M1").Value = "Yearly Change"
+    Range("M1").Font.Bold = True
+    Range("M1").HorizontalAlignment = xlCenter
+    
+    
+    Range("N1").Value = "Percent Change"
+    Range("N1").Font.Bold = True
+    Range("N1").HorizontalAlignment = xlCenter
+    
+    
+    Range("O1").Value = "Total Volume"
+    Range("O1").Font.Bold = True
+    Range("O1").HorizontalAlignment = xlCenter
+   
+   'Autofit Text for Category titles
+    Range("M1:O1").Columns.AutoFit
+    
+    'Loop over data in single worksheet
+        For row = 2 To LastRow
+            
+            'Initialize counter
+            Counter = Counter + 1
+            
+            'If the counter value is equal to 1
+            If Counter = 1 Then
+                
+                'Set the OpenValue to Cells(row,3).Value
+                OpenValue = Cells(row, 3).Value
+            
+                'Set the Ticker
+                Ticker = Cells(row, 1)
+                
+                'Still add to Total_Vol
+                Total_Vol = Total_Vol + Cells(row, 7).Value
+                
+            'If the values in the current row don't match the one in the upcoming row
+            ElseIf Cells(row + 1, 1).Value <> Cells(row, 1).Value Then
+                 
+                'Set the close Value
+                CloseValue = Cells(row, 6).Value
+                
+                'Calculate yearly change
+                YearlyChange = CloseValue - OpenValue
+                
+                'Conditional for Percent Change
+                    If (OpenValue = 0) Then
+                        PercentChange = 0
+                    Else
+                        PercentChange = (YearlyChange / OpenValue)
+                    End If
+                    
+                'Add to Total_Vol
+                Total_Vol = Total_Vol + Cells(row, 7).Value
+                
+                'put the values in the summry table
+                Range("L" & SummaryRow).Value = Ticker
+                Range("M" & SummaryRow).Value = YearlyChange
+                Range("N" & SummaryRow).Value = PercentChange
+                Range("O" & SummaryRow).Value = Total_Vol
+                
+                'set the PercentChange summary table format to percent
+                Range("N" & SummaryRow).NumberFormat = "0.00%"
+                
+                
+                    'Nest Conditional for Color Formatting: PercentChange
+                    If (Range("N" & SummaryRow).Value < 0) Then
+                        'lower than zero? color it red
+                         Range("N" & SummaryRow).Interior.Color = RGB(139, 0, 0)
+                    Else
+                        'color it green
+                        Range("N" & SummaryRow).Interior.Color = RGB(0, 128, 0)
+                    End If
+                    
+                'Add one to SummaryRow counter
+                SummaryRow = SummaryRow + 1
+                
+                'reset the Counter, YearlyChange,PercentChange and Total_Vol
+                Counter = 0
+                YearlyChange = 0
+                PercentChange = 0
+                Total_Vol = 0
+            
+            'Otherwise
+            Else
+                'Keep adding to Total_Vol
+                Total_Vol = Total_Vol + Cells(row, 7).Value
+            End If
+            
+        Next row
+        
+Next ws
+
+End Sub
+
